@@ -1,0 +1,73 @@
+# Untitled notebook
+
+## Advent of Code 2021 w/ Jose Valim
+
+```elixir
+Mix.install([:kino])
+```
+
+```elixir
+input = Kino.Input.textarea("Please paste your input file: ")
+```
+
+## Part I
+
+**From AoC**
+
+The first order of business is to figure out how quickly the depth increases, just so you know what you're dealing with:
+
+You never know if the keys will get carried into deeper water by an ocean current or a fish or something.
+
+To do this, count the number of times a depth measurement increases from the previous measurement.
+
+(There is no measurement before the first measurement.)
+
+```elixir
+# parsing the input:
+# Split the input on new lines
+input
+|> Kino.Input.read()
+|> String.split("\n", trim: true)
+# refactor the Enum.map call that used the anon func to the capture operator syntax:
+# |> Enum.map(fn x -> String.to_integer(x) end)
+|> Enum.map(&String.to_integer/1)
+# use the chunk_by func to pair off the numbers.
+# the 1 count sets the second number of a given pair to be the first number of the next pair.
+# :discard flag removes any leftover numbers.
+|> Enum.chunk_every(2, 1, :discard)
+# filter func checks every pair where the right side is greater than the left,
+# indicating that the depth has increased in that pair.
+|> Enum.filter(fn [left, right] -> right > left end)
+# count func to count the remaining pairs.
+|> Enum.count()
+
+# you can also skip the filter call and just count/2,
+# which allows you to return counts that are true:
+
+# Enum.count(fn [left, right] -> right > left end)
+```
+
+## Part II
+
+**From AoC:**
+
+Considering every single measurement isn't as useful as you expected: there's just too much noise in the data.
+
+Instead, consider sums of a three-measurement sliding window. Again considering the above example:
+
+```elixir
+# Parsing the input:
+# Split the input on new lines
+input
+|> Kino.Input.read()
+|> String.split("\n", trim: true)
+# refactor the Enum.map call that used the anon func to the capture operator syntax:
+# |> Enum.map(fn x -> String.to_integer(x) end)
+|> Enum.map(&String.to_integer/1)
+# this time we use 3 as the enumerable.
+|> Enum.chunk_every(3, 1, :discard)
+# now we chunk again to create pairs of the groups of three.
+|> Enum.chunk_every(2, 1, :discard)
+# the count call now uses Enum.sum in the func call to sum each group of three and compare them with the > operator.
+|> Enum.count(fn [left, right] -> Enum.sum(right) > Enum.sum(left) end)
+```
